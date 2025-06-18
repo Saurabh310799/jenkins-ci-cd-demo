@@ -1,44 +1,32 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "saurabh310799/jenkins-demo"
+    }
+
     stages {
-        stage('Checkout') {
+        stage('Clone Repo') {
             steps {
-                checkout scm
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                sh 'pip install -r requirements.txt'
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                sh 'pytest'
+                git 'https://github.com/Saurabh310799/jenkins-ci-cd-demo.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build("yourdockerhubusername/jenkins-demo:${env.BUILD_NUMBER}")
+                    dockerImage = docker.build("${IMAGE_NAME}")
                 }
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                withDockerRegistry([credentialsId: 'dockerhub-creds', url: '']) {
-                    dockerImage.push()
+                script {
+                    docker.withRegistry('', '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-Saurabh') {
+                        dockerImage.push()
+                    }
                 }
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                sh 'docker run -d -p 8080:8080 Saurabh310799/jenkins-demo:${env.BUILD_NUMBER}'
             }
         }
     }
